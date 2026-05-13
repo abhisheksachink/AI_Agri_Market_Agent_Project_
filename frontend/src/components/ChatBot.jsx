@@ -32,15 +32,15 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      // Call AI service
-      const response = await axios.post('/api/query', {
+      // Call AI service directly
+      const response = await axios.post('http://localhost:8000/api/query', {
         query: input,
         language: 'auto'
       });
 
       const aiMessage = {
         role: 'assistant',
-        content: response.data.english_answer,
+        content: response.data.answer || response.data.english_answer,
         metadata: response.data
       };
 

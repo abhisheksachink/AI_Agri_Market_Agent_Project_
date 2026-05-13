@@ -1,5 +1,5 @@
 /**
- * Auth Middleware - Verify JWT token
+ * Auth Middleware - Optional JWT token verification
  */
 
 const jwt = require('jsonwebtoken');
@@ -7,15 +7,18 @@ const jwt = require('jsonwebtoken');
 module.exports = function(req, res, next) {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
-    if (!token) {
-        return res.status(401).json({ error: 'No token, authorization denied' });
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = { id: decoded.id };
+        } catch (err) {
+            // Token invalid, but continue as anonymous
+            req.user = { id: 'anonymous' };
+        }
+    } else {
+        // No token, continue as anonymous
+        req.user = { id: 'anonymous' };
     }
     
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { id: decoded.id };
-        next();
-    } catch (err) {
-        res.status(401).json({ error: 'Token is not valid' });
-    }
+    next();
 };

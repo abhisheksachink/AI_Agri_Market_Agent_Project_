@@ -11,15 +11,10 @@ import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
 import Dashboard from './pages/Dashboard';
 import PricePage from './pages/PricePage';
-import LoginPage from './pages/LoginPage';
-import ProfilePage from './pages/ProfilePage';
 
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-
-// Context
-import { AuthProvider } from './context/AuthContext';
 
 // Styles
 import './styles/global.css';
@@ -43,29 +38,25 @@ function App() {
 
   return (
     <Router>
-      <AuthProvider>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
-          <Navbar theme={theme} onThemeToggle={toggleTheme} />
-          
-          <motion.main 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex-grow"
-          >
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/prices" element={<PricePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </motion.main>
-          
-          <Footer />
-        </div>
-      </AuthProvider>
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+        <Navbar theme={theme} onThemeToggle={toggleTheme} />
+        
+        <motion.main 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex-grow"
+        >
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/prices" element={<PricePage />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </motion.main>
+        
+        <Footer />
+      </div>
     </Router>
   );
 }

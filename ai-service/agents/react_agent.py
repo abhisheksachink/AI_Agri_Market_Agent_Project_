@@ -6,7 +6,8 @@ Uses LangChain's ReAct framework with Gemini 2.5 Flash for step-by-step reasonin
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain_core.tools import Tool
-from langchain_core.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate
+from langchain_core.agents import AgentAction, AgentFinish
 from typing import Any, List, Dict, Optional
 import os
 from dotenv import load_dotenv
@@ -39,7 +40,7 @@ class ReactAgent:
         if not self.tools:
             raise ValueError("No tools provided to ReAct Agent")
         
-        # System prompt for the ReAct agent
+        # System prompt for the ReAct agent with required template variables
         system_prompt = """You are an AI Agricultural Market Intelligence Assistant.
         
 Your task is to help farmers by answering questions about:
@@ -65,23 +66,40 @@ Important Rules:
 - Respond in Hindi if the question is in Hindi
 - Keep language simple and farmer-friendly
 
-Available tools: {tool_names}
+Available tools:
+{tools}
+
+You have access to the following tools:
+{tool_names}
 
 Use the following format:
-Thought: I need to...
-Action: tool_name
-Action Input: parameters
-Observation: result from tool
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
 ... (this Thought/Action/Observation can repeat N times)
-Thought: I now have all the information needed
-Final Answer: your comprehensive answer with reasoning"""
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+Begin!
+
+Question: {{input}}
+Thought:{agent_scratchpad}"""
+
+        # Create prompt template with required variables
+        prompt = PromptTemplate(
+            input_variables=["input", "agent_scratchpad"],
+            template=system_prompt,
+            tool_names=", ".join([tool.name for tool in self.tools]),
+            tools="\n".join([f"- {tool.name}: {tool.description}" for tool in self.tools])
+        )
 
         # Create the ReAct agent
         self.agent = create_react_agent(
             llm=llm,
             tools=self.tools,
-            prompt=PromptTemplate.from_template(system_prompt),
-            stop_sequence=["\nObservation:"],
+            prompt=prompt,
         )
         
         # Create executor with detailed error handling
